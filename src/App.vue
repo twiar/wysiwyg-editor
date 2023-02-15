@@ -1,65 +1,106 @@
 <script setup>
 import defaultImg from "@/assets/img/image.png";
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
 
 const visualView = ref(null);
 const historyUndo = ref([]);
 const historyRedo = ref([]);
+let clickedUndo = false;
 
 function highlight() {
-  document.querySelectorAll('.visual-view > *').forEach((el) => {
-    if (el.classList.value.includes('active')) {
+  document.querySelectorAll(".visual-view > *").forEach((el) => {
+    if (el.classList.value.includes("active")) {
       console.log(el.classList);
-      el.classList.remove('active-el');
+      el.classList.remove("active-el");
     }
   });
-  if (this.nodeName === 'DIV') {
-    this.classList.add('active-el');
+  if (this.nodeName === "DIV") {
+    this.classList.add("active-el");
   }
 }
 
 function undo() {
-  const elem = visualView.value.cloneNode(true);
-  historyRedo.value.push(elem);
-  visualView.value.replaceChildren(...historyUndo.value[historyUndo.value.length - 1].children);
+  if (!clickedUndo) {
+    let elem = visualView.value.cloneNode(true);
+    historyRedo.value.push(elem);
+    elem = historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
+    historyRedo.value.push(elem);
+  } else {
+    if (historyRedo.value.length >= 1) {
+      const elem =
+        historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
+      historyRedo.value.push(elem);
+    } else {
+      let elem =
+        historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
+      historyRedo.value.push(elem);
+      historyUndo.value.pop();
+      elem = historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
+      historyRedo.value.push(elem);
+    }
+  }
+  visualView.value.replaceChildren(
+    ...historyUndo.value[historyUndo.value.length - 1].children
+  );
   historyUndo.value.pop();
+  clickedUndo = true;
 }
 
 function redo() {
-  const elem = historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
-  historyUndo.value.push(elem);
-  visualView.value.replaceChildren(...historyRedo.value[historyRedo.value.length - 1].children);
+  if (historyUndo.value.length >= 1) {
+    const elem =
+      historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
+    historyUndo.value.push(elem);
+  } else {
+    let elem = historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
+    historyUndo.value.push(elem);
+    historyRedo.value.pop();
+    elem = historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
+    historyUndo.value.push(elem);
+  }
+  visualView.value.replaceChildren(
+    ...historyRedo.value[historyRedo.value.length - 1].children
+  );
   historyRedo.value.pop();
 }
 
 function makeTitle() {
-  console.log('title');
+  console.log("title");
 }
 
 function makeParagraph() {
-  console.log('paragraph');
+  console.log("paragraph");
 }
 
 function placeImage() {
-  console.log('image');
+  console.log("image");
 }
 
 function copyHtml() {
-  console.log('html');
+  console.log("html");
 }
 
-function keyDownHandler() {
-  const elem = visualView.value.cloneNode(true);
-  historyUndo.value.push(elem);
-};
+function keyDownHandler(e) {
+  if ((e.key.length === 1 || e.key === 'Delete' || e.key === 'Enter' || e.key === 'Backspace') && !e.ctrlKey) {
+    const elem = visualView.value.cloneNode(true);
+    historyUndo.value.push(elem);
+    historyRedo.value = [];
+    clickedUndo = false;
+  }
+
+  const key = e.key;
+  if (key.toString() === 'z' && e.ctrlKey && historyUndo.value.length > 0) {
+    undo();
+  }
+}
 
 onMounted(() => {
-  document.querySelectorAll('.visual-view > *').forEach((el) => {
-    el.addEventListener('click', highlight);
+  document.querySelectorAll(".visual-view > *").forEach((el) => {
+    el.addEventListener("click", highlight);
   });
-
-  console.log(visualView.value);
-  document.querySelector('.visual-view').addEventListener('keydown', keyDownHandler);
+  document
+    .querySelector(".visual-view")
+    .addEventListener("keydown", keyDownHandler);
 });
 </script>
 
@@ -73,7 +114,7 @@ onMounted(() => {
           icon-color="#262824"
           class="mr-3"
           :disabled="historyUndo.length < 1"
-          @click='undo'
+          @click="undo"
         />
         <va-button
           icon="redo"
@@ -81,30 +122,30 @@ onMounted(() => {
           icon-color="#262824"
           class="mr-3"
           :disabled="historyRedo.length < 1"
-          @click='redo'
+          @click="redo"
         />
         <va-button
           icon="title"
           color="shadow"
           icon-color="#262824"
           class="mr-3"
-          @click='makeTitle'
+          @click="makeTitle"
         />
         <va-button
           icon="text_fields"
           color="shadow"
           icon-color="#262824"
           class="mr-3"
-          @click='makeParagraph'
+          @click="makeParagraph"
         />
         <va-button
           icon="image"
           color="shadow"
           icon-color="#262824"
           class="mr-3"
-          @click='placeImage'
+          @click="placeImage"
         />
-        <a href="#" class="va-link ml-3" @click='copyHtml'>Скопировать HTML</a>
+        <a href="#" class="va-link ml-3" @click="copyHtml">Скопировать HTML</a>
       </div>
     </div>
     <div class="content">
@@ -136,15 +177,15 @@ onMounted(() => {
           интересный эксперимент проверки позиций, занимаемых участниками в
           отношении поставленных задач. С другой стороны постоянное
           информационно-пропагандистское обеспечение нашей деятельности
-          представляет собой интересный эксперимент проверки форм развития. Идейные
-          соображения высшего порядка, а также укрепление и развитие структуры
-          влечет за собой процесс внедрения и модернизации соответствующий
-          условий активизации. Задача организации, в особенности же реализация
-          намеченных плановых заданий играет важную роль в формировании
-          дальнейших направлений развития. Повседневная практика показывает, что
-          постоянное информационно-пропагандистское обеспечение нашей
-          деятельности играет важную роль в формировании существенных финансовых
-          и административных условий.
+          представляет собой интересный эксперимент проверки форм развития.
+          Идейные соображения высшего порядка, а также укрепление и развитие
+          структуры влечет за собой процесс внедрения и модернизации
+          соответствующий условий активизации. Задача организации, в особенности
+          же реализация намеченных плановых заданий играет важную роль в
+          формировании дальнейших направлений развития. Повседневная практика
+          показывает, что постоянное информационно-пропагандистское обеспечение
+          нашей деятельности играет важную роль в формировании существенных
+          финансовых и административных условий.
         </p>
         <br />
         <p>
@@ -166,6 +207,9 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  scrollbar-width: thin;
+  width: 100vw;
+  overflow-x: hidden;
 }
 
 #app {

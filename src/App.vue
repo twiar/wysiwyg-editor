@@ -5,8 +5,13 @@ const visualView = ref(null);
 const historyUndo = ref([]);
 const historyRedo = ref([]);
 const selectedTextLength = ref(0);
+const showModal = ref(false);
+const imageUrl = ref("");
+const caretShowed = ref(false);
 let clickedUndo = false;
 let correctPos = 0;
+let caretNode = null;
+let caretStartIndex = null;
 
 function highlight() {
   document.querySelectorAll(".visual-view > *").forEach((el) => {
@@ -154,21 +159,76 @@ function wrap(tag) {
   node.remove();
 }
 
+function showImgForm() {
+  showModal.value = true;
+}
+
 function placeImage() {
-  console.log("image");
+  const elem = visualView.value.cloneNode(true);
+  historyUndo.value.push(elem);
+
+  const afterText = caretNode.innerText;
+  let wrapElement = document.createElement("img");
+  wrapElement.src = imageUrl.value;
+
+  const beforeText = caretNode.innerText;
+  const newTag = caretNode.nodeName.toLowerCase();
+  const beforeElement = document.createElement(newTag);
+  beforeElement.innerText = beforeText.slice(
+    0,
+    caretStartIndex - 1
+  );
+  const afterElement = document.createElement(newTag);
+  afterElement.innerText = afterText.slice(
+    caretStartIndex - 1 + wrapElement.innerText.length
+  );
+
+  const nodeIndex = Array.from(caretNode.parentNode.children).indexOf(caretNode);
+  caretNode.parentNode.insertBefore(
+    afterElement,
+    caretNode.parentNode.children[nodeIndex]
+  );
+  caretNode.parentNode.insertBefore(
+    wrapElement,
+    caretNode.parentNode.children[nodeIndex]
+  );
+  caretNode.parentNode.insertBefore(
+    beforeElement,
+    caretNode.parentNode.children[nodeIndex]
+  );
+  caretNode.remove();
+
+  document.querySelectorAll(".visual-view > *").forEach((el) => {
+    el.addEventListener("click", highlight);
+  });
+
+  imageUrl.value = '';
+  showModal.value = false;
 }
 
 function copyHtml() {
-  navigator.clipboard.write([
-    new ClipboardItem({
-      "text/html": new Blob([document.querySelector(".visual-view").innerHTML], { type: "text/html" }),
-    }),
-  ]);
+  if (typeof ClipboardItem === "undefined") {
+    alert(
+      `Извините! Эта функция пока недоступна в используемом вами браузере.
+      Выделение текста и вставка его в электронную почту должны дать тот же результат.`
+    );
+    return;
+  }
+
+  const type = "text/html";
+  const blob = new Blob([document.querySelector(".visual-view").innerHTML], {
+    type,
+  });
+  const data = [new ClipboardItem({ [type]: blob })];
+
+  navigator.clipboard.write(data);
   alert("Сохранено в виде HTML");
   const pos = document.querySelector(".container").getBoundingClientRect().x;
   if (pos !== correctPos) {
     let move = correctPos - pos;
-    document.querySelector(".container").style.transform = `translate(-${move}px, -${move}px)`;
+    document.querySelector(
+      ".container"
+    ).style.transform = `translate(-${move}px, -${move}px)`;
   }
 }
 
@@ -216,10 +276,16 @@ onMounted(() => {
   });
   document.querySelector(".visual-view").addEventListener("mouseup", () => {
     try {
+      if (window.getSelection) {
+        caretShowed.value = true;
+        caretNode = window.getSelection().getRangeAt(0).startContainer.parentNode;
+        caretStartIndex = window.getSelection().getRangeAt(0).startOffset;
+      }
+
       selectedTextLength.value = window
-      .getSelection()
-      .getRangeAt(0)
-      .toString().length;
+        .getSelection()
+        .getRangeAt(0)
+        .toString().length;
     } catch (error) {
       console.log();
     }
@@ -272,11 +338,10 @@ onMounted(() => {
           color="shadow"
           icon-color="#262824"
           class="mr-3"
-          @click="placeImage"
+          :disabled='!caretShowed'
+          @click="showImgForm"
         />
-        <a href="#" class="va-link ml-3" @click="copyHtml"
-          >Скопировать HTML</a
-        >
+        <a href="#" class="va-link ml-3" @click="copyHtml">Скопировать HTML</a>
       </div>
     </div>
     <div class="content">
@@ -297,10 +362,7 @@ onMounted(() => {
           финансовых и административных условий.
         </p>
         <h3>Смотрите какие обезьянки</h3>
-        <img
-          src="https://i.ibb.co/6Rz6d5D/image-1.png"
-          alt="Обезьянки"
-        />
+        <img src="https://i.ibb.co/6Rz6d5D/image-1.png" alt="Обезьянки" />
         <p>
           Таким образом консультация с широким активом представляет собой
           интересный эксперимент проверки позиций, занимаемых участниками в
@@ -328,6 +390,17 @@ onMounted(() => {
       </div>
     </div>
   </div>
+  <va-modal v-model="showModal" no-padding blur>
+    <template #content>
+      <va-card-title> Ссылка на изображение </va-card-title>
+      <va-card-content>
+        <va-input type="text" v-model="imageUrl" />
+      </va-card-content>
+      <va-card-actions>
+        <va-button @click="placeImage">Добавить</va-button>
+      </va-card-actions>
+    </template>
+  </va-modal>
 </template>
 
 <style lang="scss">
@@ -440,7 +513,8 @@ p {
 }
 
 img {
-  max-height: 300px;
+  width: 100%;
+  max-height: 600px;
   border-radius: 4px;
 }
 

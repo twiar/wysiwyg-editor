@@ -1,5 +1,5 @@
 # WYSIWYG Editor
-## [Открыть](https://code.visualstudio.com/)
+## [Открыть](https://twiar.github.io/wysiwyg-editor/)
 
 This template should help get you started developing with Vue 3 in Vite.
 

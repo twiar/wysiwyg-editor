@@ -10,12 +10,20 @@ let clickedUndo = false;
 function highlight() {
   document.querySelectorAll(".visual-view > *").forEach((el) => {
     if (el.classList.value.includes("active")) {
-      console.log(el.classList);
       el.classList.remove("active-el");
     }
   });
-  if (this.nodeName === "DIV") {
+  if (this.nodeName === "IMG") {
     this.classList.add("active-el");
+    if (window.getSelection) {
+      if (window.getSelection().empty) {
+        window.getSelection().empty();
+      } else if (window.getSelection().removeAllRanges) {
+        window.getSelection().removeAllRanges();
+      }
+    } else if (document.selection) {
+      document.selection.empty();
+    }
   }
 }
 
@@ -42,6 +50,9 @@ function undo() {
   visualView.value.replaceChildren(
     ...historyUndo.value[historyUndo.value.length - 1].children
   );
+  document.querySelectorAll(".visual-view > *").forEach((el) => {
+    el.addEventListener("click", highlight);
+  });
   historyUndo.value.pop();
   clickedUndo = true;
 }
@@ -61,6 +72,9 @@ function redo() {
   visualView.value.replaceChildren(
     ...historyRedo.value[historyRedo.value.length - 1].children
   );
+  document.querySelectorAll(".visual-view > *").forEach((el) => {
+    el.addEventListener("click", highlight);
+  });
   historyRedo.value.pop();
 }
 
@@ -88,6 +102,15 @@ function keyDownHandler(e) {
     clickedUndo = false;
   }
 
+  if (e.key === 'Delete') {
+    historyUndo.value.pop();
+    const selected = document.querySelector('.active-el');
+    selected.classList.remove('active-el');
+    const elem = visualView.value.cloneNode(true);
+    historyUndo.value.push(elem);
+    selected.remove();
+  }
+
   const key = e.key;
   if (key.toString() === 'z' && e.ctrlKey && historyUndo.value.length > 0) {
     undo();
@@ -97,6 +120,15 @@ function keyDownHandler(e) {
 onMounted(() => {
   document.querySelectorAll(".visual-view > *").forEach((el) => {
     el.addEventListener("click", highlight);
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.nodeName !== "IMG") {
+      document.querySelectorAll(".visual-view > *").forEach((el) => {
+        if (el.classList.value.includes("active")) {
+          el.classList.remove("active-el");
+        }
+      });
+    }
   });
   document
     .querySelector(".visual-view")
@@ -169,7 +201,7 @@ onMounted(() => {
         <br />
         <h3 class="va-h3">Смотрите какие обезьянки</h3>
         <br />
-        <va-image :src="defaultImg" />
+        <img :src="defaultImg" />
         <br />
         <br />
         <p>
@@ -248,7 +280,7 @@ p {
   line-height: 23px;
 }
 
-.va-image {
+img {
   max-height: 300px;
 }
 

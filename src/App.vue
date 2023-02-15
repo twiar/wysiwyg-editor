@@ -1,47 +1,141 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import defaultImg from "@/assets/img/image.png";
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+  <div class="container">
+    <div class="toolbar">
+      <div class="d-flex align-center">
+        <va-button
+          icon="undo"
+          color="shadow"
+          icon-color="#262824"
+          class="mr-3"
+        />
+        <va-button
+          icon="redo"
+          color="shadow"
+          icon-color="#262824"
+          class="mr-3"
+        />
+        <va-button
+          icon="title"
+          color="shadow"
+          icon-color="#262824"
+          class="mr-3"
+        />
+        <va-button
+          icon="text_fields"
+          color="shadow"
+          icon-color="#262824"
+          class="mr-3"
+        />
+        <va-button
+          icon="image"
+          color="shadow"
+          icon-color="#262824"
+          class="mr-3"
+        />
+        <a href="#" class="va-link ml-3">Скопировать HTML</a>
+      </div>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+    <div class="content">
+      <div class="visual-view" contenteditable>
+        <p>
+          Таким образом консультация с широким активом представляет собой
+          интересный эксперимент проверки позиций, занимаемых участниками в
+          отношении поставленных задач. С другой стороны постоянное
+          информационно-пропагандистское обеспечение нашей деятельности
+          представляет собой интересный эксперимент проверки форм развития.
+          Идейные соображения высшего порядка, а также укрепление и развитие
+          структуры влечет за собой процесс внедрения и модернизации
+          соответствующий условий активизации. Задача организации, в особенности
+          же реализация намеченных плановых заданий играет важную роль в
+          формировании дальнейших направлений развития. Повседневная практика
+          показывает, что постоянное информационно-пропагандистское обеспечение
+          нашей деятельности играет важную роль в формировании существенных
+          финансовых и административных условий.
+        </p>
+        <br />
+        <h3 class="va-h3">Смотрите какие обезьянки</h3>
+        <br />
+        <va-image :src="defaultImg" />
+        <br />
+        <br />
+        <p>
+          Таким образом консультация с широким активом представляет собой
+          интересный эксперимент проверки позиций, занимаемых участниками в
+          отношении поставленных задач. С другой стороны постоянное
+          информационно-пропагандистское обеспечение нашей деятельности
+          представляет собой интересный эксперимент проверки форм развития. Идейные
+          соображения высшего порядка, а также укрепление и развитие структуры
+          влечет за собой процесс внедрения и модернизации соответствующий
+          условий активизации. Задача организации, в особенности же реализация
+          намеченных плановых заданий играет важную роль в формировании
+          дальнейших направлений развития. Повседневная практика показывает, что
+          постоянное информационно-пропагандистское обеспечение нашей
+          деятельности играет важную роль в формировании существенных финансовых
+          и административных условий.
+        </p>
+        <br />
+        <p>
+          Товарищи! новая модель организационной деятельности требуют от нас
+          анализа направлений прогрессивного развития. Задача организации, в
+          особенности же постоянный количественный рост и сфера нашей активности
+          требуют от нас анализа позиций, занимаемых участниками в отношении
+          поставленных задач. Задача организации, в особенности же реализация
+          намеченных плановых заданий требуют от нас анализа системы обучения
+          кадров, соответствует насущным потребностям.
+        </p>
+      </div>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
+<style lang="scss">
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+#app {
+  width: 100%;
+  min-height: 100vh;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.container {
+  width: 100%;
+  min-height: 100vh;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding-top: 30px;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.toolbar {
+  padding: 15px 30px;
+  background: #fff;
+  margin-bottom: 15px;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.content {
+  padding: 30px;
+  background: #fff;
+  min-height: calc(100vh - 175px);
+  margin-bottom: 30px;
+}
+
+.visual-view {
+  min-height: calc(100vh - 205px);
+}
+
+p {
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 23px;
+}
+
+.va-image {
+  max-height: 300px;
 }
 </style>

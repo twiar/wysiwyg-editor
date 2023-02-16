@@ -44,16 +44,17 @@ function undo() {
     elem = historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
     historyRedo.value.push(elem);
   } else {
-    if (historyRedo.value.length >= 1) {
-      const elem =
-        historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
-      historyRedo.value.push(elem);
-    } else {
+    if (historyRedo.value.length === 0) {
       let elem =
         historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
       historyRedo.value.push(elem);
       historyUndo.value.pop();
-      elem = historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
+      elem =
+        historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
+      historyRedo.value.push(elem);
+    } else {
+      const elem =
+        historyUndo.value[historyUndo.value.length - 1].cloneNode(true);
       historyRedo.value.push(elem);
     }
   }
@@ -68,15 +69,17 @@ function undo() {
 }
 
 function redo() {
-  if (historyUndo.value.length >= 1) {
-    const elem =
+  if (historyUndo.value.length === 0) {
+    let elem =
+      historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
+    historyUndo.value.push(elem);
+    historyRedo.value.pop();
+    elem =
       historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
     historyUndo.value.push(elem);
   } else {
-    let elem = historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
-    historyUndo.value.push(elem);
-    historyRedo.value.pop();
-    elem = historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
+    const elem =
+      historyRedo.value[historyRedo.value.length - 1].cloneNode(true);
     historyUndo.value.push(elem);
   }
   visualView.value.replaceChildren(
@@ -89,9 +92,14 @@ function redo() {
 }
 
 function wrap(tag) {
+  const elem = visualView.value.cloneNode(true);
+  historyUndo.value.push(elem);
+  historyRedo.value = [];
+
   const selection = window.getSelection().getRangeAt(0);
   const node = window.getSelection().getRangeAt(0).startContainer.parentNode;
   const nodeText = node.innerText;
+  const afterText = node.innerText;
   const selectedText = selection.extractContents();
 
   if (selectedText.querySelector("img")) {
@@ -120,7 +128,6 @@ function wrap(tag) {
     return;
   }
 
-  const afterText = node.innerText;
   let wrapElement;
 
   if (tag === "title") {
@@ -157,6 +164,7 @@ function wrap(tag) {
     node.parentNode.children[nodeIndex]
   );
   node.remove();
+  clickedUndo = false;
 }
 
 function showImgForm() {
@@ -166,6 +174,7 @@ function showImgForm() {
 function placeImage() {
   const elem = visualView.value.cloneNode(true);
   historyUndo.value.push(elem);
+  historyRedo.value = [];
 
   const afterText = caretNode.innerText;
   let wrapElement = document.createElement("img");
@@ -174,16 +183,15 @@ function placeImage() {
   const beforeText = caretNode.innerText;
   const newTag = caretNode.nodeName.toLowerCase();
   const beforeElement = document.createElement(newTag);
-  beforeElement.innerText = beforeText.slice(
-    0,
-    caretStartIndex - 1
-  );
+  beforeElement.innerText = beforeText.slice(0, caretStartIndex - 1);
   const afterElement = document.createElement(newTag);
   afterElement.innerText = afterText.slice(
     caretStartIndex - 1 + wrapElement.innerText.length
   );
 
-  const nodeIndex = Array.from(caretNode.parentNode.children).indexOf(caretNode);
+  const nodeIndex = Array.from(caretNode.parentNode.children).indexOf(
+    caretNode
+  );
   caretNode.parentNode.insertBefore(
     afterElement,
     caretNode.parentNode.children[nodeIndex]
@@ -197,20 +205,20 @@ function placeImage() {
     caretNode.parentNode.children[nodeIndex]
   );
   caretNode.remove();
+  clickedUndo = false;
 
   document.querySelectorAll(".visual-view > *").forEach((el) => {
     el.addEventListener("click", highlight);
   });
 
-  imageUrl.value = '';
+  imageUrl.value = "";
   showModal.value = false;
 }
 
 function copyHtml() {
   if (typeof ClipboardItem === "undefined") {
     alert(
-      `Извините! Эта функция пока недоступна в используемом вами браузере.
-      Выделение текста и вставка его в электронную почту должны дать тот же результат.`
+      `Извините! Эта функция пока недоступна в используемом вами браузере.`
     );
     return;
   }
@@ -278,7 +286,8 @@ onMounted(() => {
     try {
       if (window.getSelection) {
         caretShowed.value = true;
-        caretNode = window.getSelection().getRangeAt(0).startContainer.parentNode;
+        caretNode = window.getSelection().getRangeAt(0)
+          .startContainer.parentNode;
         caretStartIndex = window.getSelection().getRangeAt(0).startOffset;
       }
 
@@ -338,7 +347,7 @@ onMounted(() => {
           color="shadow"
           icon-color="#262824"
           class="mr-3"
-          :disabled='!caretShowed'
+          :disabled="!caretShowed"
           @click="showImgForm"
         />
         <a href="#" class="va-link ml-3" @click="copyHtml">Скопировать HTML</a>
